@@ -138,38 +138,39 @@ public class AnnotationBean extends AbstractConfig implements DisposableBean, Be
         }
         
         Class <?> clazzImpl = null;
-	if (AopUtils.isAopProxy(bean) || AopUtils.isCglibProxy(bean)) {
-	    clazzImpl = AopUtils.getTargetClass(bean);
-	} else {
-	    clazzImpl = bean.getClass();
-	}
+		if (AopUtils.isAopProxy(bean) || AopUtils.isCglibProxy(bean)) {
+			clazzImpl = AopUtils.getTargetClass(bean);
+		} else {
+			clazzImpl = bean.getClass();
+		}
+        
         Service service = clazzImpl.getAnnotation(Service.class);
         if (service != null) {
             ServiceBean<Object> serviceConfig = new ServiceBean<Object>(service);
             if (void.class.equals(service.interfaceClass())
                     && "".equals(service.interfaceName())) {
                 if (bean.getClass().getInterfaces().length > 0) {
-                    Class<?>[] clazz = ClassUtils.getAllInterfaces(bean);
-		    Class<?> interfaceClazz = null;
-		    if (clazz == null) {
-			throw new RuntimeException(clazzImpl.getName() + " is not exist interface.");
-		    } else if (clazz.length > 1) {
-			boolean flag = false;
-		        for (Class<?> c : clazz) {
-		    	    // 接口实现类要包含接口的全名，ps：RegUserService-->RegUserServiceImpl
-		    	    if(clazzImpl.getSimpleName().contains(c.getSimpleName())) {
-		    	        interfaceClazz = c;
-		    	        flag = true;
-			        break;
-		    	    }
-		        }
-		        if (!flag) {
-		    	    throw new RuntimeException(bean.getClass().getName() + " remote service interface must only.");
-		        }
-		    } else {
-		        interfaceClazz = clazz[0];
-		    }
-		    serviceConfig.setInterface(interfaceClazz);
+                	Class<?>[] clazz = ClassUtils.getAllInterfaces(bean);
+					Class<?> interfaceClazz = null;
+					if (clazz == null) {
+						throw new RuntimeException(clazzImpl.getName() + " is not exist interface!");
+					} else if (clazz.length > 1) {
+						boolean flag = false;
+					    for (Class<?> c : clazz) {
+					    	// 接口实现类要包含接口的全名，ps：RegUserService-->RegUserServiceImpl
+					    	if(clazzImpl.getSimpleName().contains(c.getSimpleName())) {
+					    		interfaceClazz = c;
+					    		flag = true;
+								break;
+					    	}
+						}
+					    if (!flag) {
+					    	throw new RuntimeException(bean.getClass().getName() + " remote service interface must only!");
+					    }
+					} else {
+						interfaceClazz = clazz[0];
+					}
+					serviceConfig.setInterface(interfaceClazz);
                 } else {
                     throw new IllegalStateException("Failed to export remote service class " + bean.getClass().getName() + ", cause: The @Service undefined interfaceClass or interfaceName, and the service class unimplemented any interfaces.");
                 }
